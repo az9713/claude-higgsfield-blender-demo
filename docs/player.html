@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Previz Player</title>
+<style>
+  body{margin:0; background:#0f1115; color:#e8eaf0; font:16px/1.6 system-ui,sans-serif;
+       display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:16px; padding:24px; box-sizing:border-box}
+  video{max-width:min(1280px,100%); width:100%; border-radius:10px; border:1px solid #2a2f3a}
+  h1{font-size:1.1rem; font-weight:600}
+  a{color:#c8f04a}
+</style>
+</head>
+<body>
+<h1 id="title">Previz</h1>
+<video id="vid" controls autoplay playsinline></video>
+<p><a href="index.html">← Back to the development journey</a></p>
+<script>
+  var v = new URLSearchParams(location.search).get("v") === "2" ? "2" : "1";
+  document.getElementById("vid").src = "videos/blocking_" + v + ".mp4";
+  document.getElementById("vid").poster = "img/poster_" + v + ".jpg";
+  document.getElementById("title").textContent = v === "2"
+    ? "v2 — Textured walls + living five-beat camera (one continuous shot)"
+    : "v1 — Corridor, box person, simple follow camera";
+</script>
+</body>
+</html>

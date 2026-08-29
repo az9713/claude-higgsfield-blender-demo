@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude × Higgsfield Bridge × Blender — A Development Journey</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e8eaf0; --muted:#9aa3b2;
+    --accent:#c8f04a; --accent2:#e8903a; --line:#2a2f3a; --code:#12151c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink); font:16px/1.65 "Segoe UI",system-ui,-apple-system,sans-serif}
+  .wrap{max-width:960px; margin:0 auto; padding:0 24px 96px}
+  header{padding:72px 0 40px; border-bottom:1px solid var(--line)}
+  h1{font-size:2.2rem; line-height:1.2; letter-spacing:-.01em}
+  h1 .hl{color:var(--accent)}
+  .sub{color:var(--muted); margin-top:12px; max-width:44em}
+  h2{font-size:1.5rem; margin:64px 0 16px; color:var(--accent)}
+  h3{font-size:1.1rem; margin:32px 0 10px; color:var(--accent2)}
+  p{margin:12px 0; max-width:46em}
+  a{color:var(--accent)}
+  .muted{color:var(--muted)}
+  .arch{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:0; align-items:stretch; margin:28px 0; overflow-x:auto}
+  .node{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; min-width:200px}
+  .node b{display:block; color:var(--accent); margin-bottom:6px}
+  .node small{color:var(--muted); display:block; line-height:1.5}
+  .link{display:flex; align-items:center; padding:0 10px; color:var(--accent2); font-size:.8rem; white-space:nowrap; flex-direction:column; justify-content:center; gap:4px}
+  .link .arrow{font-size:1.4rem}
+  .step{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:20px 22px; margin:18px 0}
+  .step.warn{border-left-color:var(--accent2)}
+  .step .tag{font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+  .step b.t{display:block; font-size:1.05rem; margin:4px 0 8px}
+  .prompt{background:var(--code); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin:14px 0; font-style:italic; color:#cdd6e4}
+  .prompt::before{content:"USER PROMPT"; display:block; font-style:normal; font-size:.68rem; letter-spacing:.1em; color:var(--accent2); margin-bottom:6px}
+  code, pre{font-family:Consolas,"Cascadia Code",monospace; font-size:.88em}
+  code{background:var(--code); border:1px solid var(--line); border-radius:4px; padding:1px 6px}
+  pre{background:var(--code); border:1px solid var(--line); border-radius:8px; padding:14px 16px; overflow-x:auto; margin:14px 0; line-height:1.5}
+  table{border-collapse:collapse; margin:16px 0; width:100%; font-size:.92em}
+  th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+  th{background:var(--panel2); color:var(--accent)}
+  .gallery{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:20px 0}
+  .gallery figure{background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden}
+  .gallery img, .gallery video{width:100%; display:block}
+  .gallery figcaption{padding:10px 14px; font-size:.85rem; color:var(--muted)}
+  .vidrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; margin:20px 0}
+  .kbd{background:var(--panel2); border:1px solid var(--line); border-bottom-width:3px; border-radius:5px; padding:0 6px; font-family:Consolas,monospace; font-size:.85em}
+  footer{margin-top:80px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem}
+  @media (max-width:760px){ .arch{grid-template-columns:1fr} .link{padding:8px 0} .link .arrow{transform:rotate(90deg)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Prompting a Movie Shot into Existence<br><span class="hl">Claude × Higgsfield Bridge × Blender</span></h1>
+  <p class="sub">A complete development journey: from the question <em>“can you use higgsfield bridge to use blender”</em> to a fully animated, audited 30-second previz shot — built entirely by conversation, with Claude driving a live Blender session through the Higgsfield Bridge MCP connector.</p>
+  <p class="sub" style="margin-top:8px">Inspired by <a href="https://www.youtube.com/watch?v=OiULPvTJ-0E&amp;t=720s">“This Blender + Higgsfield AI Workflow Changes How You Make AI Video”</a> on YouTube.</p>
+</header>
+
+<h2>1 · How the Three Pieces Work Together</h2>
+
+<div class="arch">
+  <div class="node">
+    <b>Claude (desktop app)</b>
+    <small>The agent. Plans the scene, writes Python, decides camera language, runs audits. Talks MCP — the Model Context Protocol — so external tools appear to it as callable functions.</small>
+  </div>
+  <div class="link"><span class="arrow">⇄</span><span>MCP over HTTPS<br>bridge.higgsfield.ai/mcp</span></div>
+  <div class="node">
+    <b>Higgsfield Bridge</b>
+    <small>A cloud MCP server registered as a custom connector. Exposes ~170 typed tools namespaced by host app: <code>bl_*</code> Blender, <code>ae_*</code> After Effects, <code>pr_*</code> Premiere. Routes each call to the user's machine.</small>
+  </div>
+  <div class="link"><span class="arrow">⇄</span><span>local bridge<br>add-on session</span></div>
+  <div class="node">
+    <b>Blender (local)</b>
+    <small>The Higgsfield add-on runs a small server inside Blender, executes each tool call on Blender's main thread with full <code>bpy</code> access, and streams results (data, screenshots) back up.</small>
+  </div>
+</div>
+
+<p>Three properties make the combination work in practice:</p>
+
+<h3>Typed tools + a Python escape hatch</h3>
+<p>Common operations are typed tools (<code>bl_add_primitive</code>, <code>bl_add_camera</code>, <code>bl_set_frame</code>, <code>bl_screenshot</code>…). Anything they can't express goes through <code>bl_execute</code> — arbitrary <code>bpy</code> Python that returns JSON. In this project the corridor geometry, the box-person rig, all keyframing, the node-based wall material, and every audit ran through <code>bl_execute</code>.</p>
+
+<h3>A skill system with hard gates</h3>
+<p>Before mutating anything, the agent must load procedure modules via <code>bl_get_skill</code>: a core procedure plus references for scene specification, modeling, look development, lighting/camera, animation, and a final audit gate. These enforce a discipline that turns out to matter: write a <em>Scene Passport</em> (the contract) first, block out before detailing, checkpoint before destructive edits, never claim visual success without actually viewing evidence, and never save over the user's file without an explicit request.</p>
+
+<h3>A closed evidence loop</h3>
+<p>The agent can <em>see</em>: <code>bl_screenshot</code> captures the viewport, <code>bl_get_scene_summary</code>/<code>bl_get_object</code> return structure, and — the trick discovered late in this project — Blender can render frames directly into a folder the agent reads, giving true through-the-lens proof. Build → measure → look → fix → repeat.</p>
+
+<h2>2 · The Journey, Step by Step</h2>
+
+<div class="step">
+  <span class="tag">Session 1 · Handshake</span>
+  <b class="t">“Can you even do this?”</b>
+  <div class="prompt">can you use higgsfield bridge to use blender</div>
+  <p>Claude queried <code>get_host_status</code> — the bridge answered <code>{"blr": false}</code>: connector live, but no Blender attached. The answer was “yes, but nothing is connected”: install the add-on zip in Blender, sign in, connect. The plan for the shot was drafted while waiting.</p>
+</div>
+
+<div class="step">
+  <span class="tag">Session 2 · The build</span>
+  <b class="t">One prompt, one 30-second shot</b>
+  <div class="prompt">Connect to Blender through Higgsfield Bridge and build a 30-second previz in a single shot: a simple corridor of white walls, a box person walks down it, and the camera just follows behind him. Save a backup copy of the file after every stage</div>
+  <p>Two status polls came back offline; the third returned <code>{"blr": true}</code>. Claude loaded six skill modules, inspected the scene (factory default cube), wrote the Scene Passport — 24 fps, frames 1–720, metric units, every asset routed as free local blocking, zero paid generation — then built in five audited stages, saving a backup after each:</p>
+  <table>
+    <tr><th>Stage</th><th>What happened</th><th>Backup</th></tr>
+    <tr><td>A</td><td>Timeline 1–720 @ 24 fps, 1280×720, collections, factory defaults removed</td><td><code>corridor_previz_A_setup.blend</code></td></tr>
+    <tr><td>B</td><td>45 m corridor shell built from raw quads (<code>from_pydata</code>), matte-white material, 6 ceiling area lights + soft world</td><td><code>_B_corridor.blend</code></td></tr>
+    <tr><td>C</td><td>Box person: torso, head, legs, arms with hip/shoulder pivot origins, parented to a <code>RIG_walk_root</code> empty; head top verified at exactly 1.78 m</td><td><code>_C_person.blend</code></td></tr>
+    <tr><td>D</td><td>Walk: root travels 36 m linearly (1.2 m/s); limbs swing on 26-frame cyclic F-curves; camera keyed independently 3 m behind</td><td><code>_D_anim.blend</code></td></tr>
+    <tr><td>E</td><td>Audit: numeric motion samples at 7 frames + visual checks at frames 1/360/720</td><td><code>_E_final.blend</code></td></tr>
+  </table>
+  <p><b>Two API landmines</b> surfaced in Stage D — both fixed mid-flight: Blender 5.2's new slotted-action system removed <code>action.fcurves</code> (fixed with a channelbag-aware helper), and removing keyframes while iterating a live collection threw <code>Keyframe not in F-Curve</code> (fixed by re-fetching references each pass).</p>
+  <p><b>One design fix from looking:</b> the first through-the-lens screenshot showed the figure filling the frame, feet cut off. Camera pulled from 3 m→4 m back, 1.6→1.7 m high, 35→30 mm. That correction came from viewed evidence, not from numbers — the numeric framing check had passed.</p>
+</div>
+
+<div class="step">
+  <span class="tag">Session 3 · Cinematography</span>
+  <b class="t">Making the camera alive</b>
+  <div class="prompt">Now make it more interesting: add texture to the walls. Bring the camera alive — different framings, and animate the lens: it moves continuously on its own route, with accelerations and accents on the pauses. Everything smooth, no cuts, the hero always in frame. Save a backup copy of the file after every stage.</div>
+  <h3>Stage F — procedural walls</h3>
+  <p>A node-based material, zero paid generation: 2×1 m white panels from a Brick texture (groove bump), plaster-grain Noise bump, and per-panel batch tonal variation (Voronoi remapped to 0.94–1.06 and multiplied into base color — real panels never quite match). Mapped in object space with <code>u = x + y</code> so one material runs seamlessly down side walls <em>and</em> the end wall.</p>
+  <h3>Stage G — the camera rig</h3>
+  <p>The key idea is <b>decoupling aim from route</b>:</p>
+  <pre>CTRL_cam_aim    — empty riding the hero's chest  → what the camera LOOKS AT
+CTRL_cam_track  — bob-free dolly matching his walk → what the camera RIDES
+CAM_follow      — parented to the track, Track-To constraint on the aim;
+                  its LOCAL keyframes are the route</pre>
+  <p>“Hero always in frame” becomes a structural guarantee instead of a hope. The route is five beats in one continuous move — back-follow hold → close left-side ¾ (25 mm) → accelerating overtake into a frontal hold, dollying backwards at 42 mm → high ¾ down-shot at 22 mm → descend over the right shoulder and settle wide (slow 30→33 mm push as the final accent). Auto-clamped Bezier keys give the accelerations and the eases into every pause; the lens keys live on the camera <em>data</em>-block, animated in the same beat rhythm.</p>
+  <h3>Stage H — the audit earned its keep</h3>
+  <p>A 120-sample sweep (every 6th frame: camera-to-wall clearance, camera-to-hero distance, hero's head and torso projected into normalized camera space) caught <b>three real failures</b>:</p>
+  <table>
+    <tr><th>Frame(s)</th><th>Failure</th><th>Fix</th></tr>
+    <tr><td>200–235</td><td>Head clipped out of frame during the tight side beat</td><td>Side beat widened (more distance, slightly higher)</td></tr>
+    <tr><td>625</td><td>Descent path swung within 0.56 m of the hero</td><td>Re-routed over his right shoulder with an explicit waypoint</td></tr>
+    <tr><td>260</td><td>Head clipped during the overtake pass itself</td><td>A <em>framing accent</em>: the aim point tilts up to head height during close passes, then settles back — in a 2.4 m corridor a full figure cannot fit the frame at a 1 m pass, so the camera deliberately pans up, which reads as intent</td></tr>
+  </table>
+  <p>Final sweep: zero violations — worst head position 0.82 NDC, minimum approach 0.9 m, camera never nearer than 0.25 m to a wall.</p>
+</div>
+
+<div class="step warn">
+  <span class="tag">Incident report</span>
+  <b class="t">When the viewport lied</b>
+  <p>Verifying the frontal beat, <code>bl_screenshot</code> returned a frame with the hero half out of shot — flatly contradicting the numeric audit (head dead-center at NDC 0.5). Diagnosis ruled out every scene-side cause: one camera, correct evaluated world matrix, viewport confirmed in camera view. The OpenGL viewport capture was serving a <b>stale draw</b> that hadn't re-evaluated the Track-To constraint.</p>
+  <p>Resolution — and the most useful trick of the whole project: since Blender runs on the same machine as the agent's file workspace, Blender could <b>render true EEVEE frames directly into the agent's readable folder</b>. The real renders showed every beat perfectly framed. Rule confirmed: <em>when two sources of evidence disagree, the render is the evidence.</em></p>
+</div>
+
+<div class="step">
+  <span class="tag">Session 4 · This repository</span>
+  <b class="t">Documenting the journey</b>
+  <p>Screen recordings of both versions were compressed ~30× with ffmpeg (screen content compresses absurdly well), this page was written, and everything was packaged into a git repository with GitHub Pages serving the videos you see below.</p>
+</div>
+
+<h2>3 · The Results</h2>
+
+<div class="vidrow">
+  <figure class="gallery" style="display:block">
+    <video controls preload="metadata" poster="img/poster_1.jpg" src="videos/blocking_1.mp4"></video>
+    <figcaption>v1 — the Session-2 build: corridor, box person, simple follow camera.</figcaption>
+  </figure>
+  <figure class="gallery" style="display:block">
+    <video controls preload="metadata" poster="img/poster_2.jpg" src="videos/blocking_2.mp4"></video>
+    <figcaption>v2 — textured walls and the living five-beat camera, one continuous shot.</figcaption>
+  </figure>
+</div>
+
+<h3>Camera beats (true EEVEE renders through the shot camera)</h3>
+<div class="gallery">
+  <figure><img src="img/beat_200.png" alt="Side beat"><figcaption>f200 — close left-side ¾, 25 mm, corridor receding</figcaption></figure>
+  <figure><img src="img/beat_410.png" alt="Frontal beat"><figcaption>f410 — frontal hold, dollying backwards at 42 mm</figcaption></figure>
+  <figure><img src="img/beat_555.png" alt="High beat"><figcaption>f555 — high ¾ down-shot, 22 mm wide</figcaption></figure>
+  <figure><img src="img/beat_720.png" alt="Settle"><figcaption>f720 — wide settle at the end wall, slow push-in</figcaption></figure>
+</div>
+
+<h3>Setup (what connecting actually looks like)</h3>
+<div class="gallery">
+  <figure><img src="img/higgsfield-bridge-connector.png" alt="Adding the custom connector"><figcaption>Claude desktop → Settings → Connectors → Add custom connector → <code>https://bridge.higgsfield.ai/mcp</code></figcaption></figure>
+  <figure><img src="img/blender_after_drag_in_higgsfield_bridge_zip.png" alt="Blender with the add-on installed"><figcaption>Blender 5.2 after installing the Higgsfield add-on — note the “Sign in to Higgsfield” buttons</figcaption></figure>
+  <figure><img src="img/higgsfield-bridge-connector-tools.png" alt="Tool permissions"><figcaption>~170 tools exposed by the bridge, with per-tool permissions</figcaption></figure>
+  <figure><img src="img/higgsfield-bridge-connector-connected.png" alt="Connected"><figcaption>Connector connected among the rest of the stack</figcaption></figure>
+</div>
+
+<h2>4 · Lessons Worth Keeping</h2>
+<p><b>Decouple what the camera looks at from where it goes.</b> A Track-To constraint on an aim empty plus a keyed route on a dolly empty turns “hero always in frame, no cuts” from a per-frame prayer into a structural property.</p>
+<p><b>Audit numerically, verify visually — and know which wins.</b> The numeric sweep caught collisions and framing violations a human would scrub past; the viewed frame caught a bad composition the numbers approved. When they disagree, render.</p>
+<p><b>Geometry constrains cinematography.</b> A 2.4 m corridor caps lateral camera distance at ~1 m, and at 1 m a 1.8 m figure cannot fit a 25 mm frame. The fix wasn't fighting the math — it was a framing accent that turned the constraint into camera language.</p>
+<p><b>Live APIs shift under you.</b> Blender 5.2's slotted actions broke a decade-old idiom (<code>action.fcurves</code>) mid-session. Idempotent scripts — clear, then rebuild — made every retry safe.</p>
+<p><b>Backups after every stage cost nothing and buy everything.</b> Eight timestamped stage copies meant every experiment was reversible; the user's working file was never overwritten without an explicit request.</p>
+
+<footer>
+  Built by conversation with Claude, driving Blender 5.2 LTS through the Higgsfield Bridge MCP connector.
+  Inspired by <a href="https://www.youtube.com/watch?v=OiULPvTJ-0E&amp;t=720s">this YouTube workflow video</a>.
+  All assets in this repository were produced locally — no paid generation credits were spent.
+</footer>
+
+</div>
+</body>
+</html>
