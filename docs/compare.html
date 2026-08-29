@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blocking vs Final — Synced Wipe Comparison</title>
+<style>
+  :root{ --bg:#0f1115; --ink:#e8eaf0; --muted:#9aa3b2; --accent:#c8f04a; --line:#2a2f3a }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink); font:16px/1.6 "Segoe UI",system-ui,sans-serif;
+       min-height:100vh; display:flex; flex-direction:column; align-items:center; gap:14px; padding:28px 16px}
+  h1{font-size:1.15rem; font-weight:600; text-align:center}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted); font-size:.85rem; text-align:center; max-width:46em}
+  .stage{position:relative; width:min(1120px,96vw); aspect-ratio:16/9; border-radius:10px;
+         overflow:hidden; border:1px solid var(--line); cursor:ew-resize; user-select:none; touch-action:none}
+  .stage video{position:absolute; inset:0; width:100%; height:100%; display:block}
+  #vGuide{clip-path:inset(0 50% 0 0)}
+  .divider{position:absolute; top:0; bottom:0; left:50%; width:3px; background:var(--accent);
+           transform:translateX(-50%); pointer-events:none}
+  .divider::after{content:"◂ ▸"; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+           background:var(--accent); color:#11130a; border-radius:999px; padding:6px 10px;
+           font-size:.8rem; font-weight:700; white-space:nowrap}
+  .tag{position:absolute; top:12px; font-size:.72rem; letter-spacing:.08em; font-weight:700;
+       background:rgba(0,0,0,.55); padding:4px 10px; border-radius:5px; pointer-events:none}
+  .tag.l{left:12px} .tag.r{right:12px}
+  .controls{display:flex; gap:12px; align-items:center; width:min(1120px,96vw)}
+  button{background:var(--accent); border:0; color:#11130a; font-weight:700; padding:9px 22px;
+         border-radius:7px; cursor:pointer; font-size:.95rem}
+  input[type=range]{flex:1; accent-color:var(--accent)}
+  .time{color:var(--muted); font-variant-numeric:tabular-nums; font-size:.85rem; min-width:88px; text-align:right}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<h1>Drag the divider — <span>Blender blocking</span> vs <span>AI final</span>, playing in sync</h1>
+<p class="sub">Same frames, same camera. The corridor previz on the left is the depth guide that locked the character's motion and every camera angle of the generated shot on the right.</p>
+
+<div class="stage" id="stage">
+  <video id="vFinal" src="videos/ninja_final.mp4" preload="auto" muted playsinline loop></video>
+  <video id="vGuide" src="videos/ninja_guide.mp4" preload="auto" muted playsinline loop></video>
+  <div class="divider" id="divider"></div>
+  <div class="tag l">BLENDER BLOCKING</div>
+  <div class="tag r">AI FINAL</div>
+</div>
+
+<div class="controls">
+  <button id="btn">Play</button>
+  <input type="range" id="seek" min="0" max="1000" value="0">
+  <span class="time" id="time">0:00 / 0:00</span>
+</div>
+<p class="sub"><a href="index.html">← Back to the development journey</a> · <a href="videos/ninja_sxs.mp4">baked side-by-side MP4</a></p>
+
+<script>
+  var g = document.getElementById("vGuide"), f = document.getElementById("vFinal");
+  var stage = document.getElementById("stage"), divider = document.getElementById("divider");
+  var btn = document.getElementById("btn"), seek = document.getElementById("seek"), timeEl = document.getElementById("time");
+
+  function setWipe(frac){
+    frac = Math.max(0, Math.min(1, frac));
+    g.style.clipPath = "inset(0 " + ((1-frac)*100).toFixed(2) + "% 0 0)";
+    divider.style.left = (frac*100).toFixed(2) + "%";
+  }
+  function dragTo(e){
+    var r = stage.getBoundingClientRect();
+    var x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    setWipe(x / r.width);
+  }
+  var dragging = false;
+  stage.addEventListener("pointerdown", function(e){ dragging = true; dragTo(e); });
+  window.addEventListener("pointermove", function(e){ if (dragging) dragTo(e); });
+  window.addEventListener("pointerup", function(){ dragging = false; });
+
+  function fmt(t){ t = Math.floor(t||0); return Math.floor(t/60) + ":" + ("0"+(t%60)).slice(-2); }
+  function togglePlay(){
+    if (f.paused) { g.currentTime = f.currentTime; f.play(); g.play(); btn.textContent = "Pause"; }
+    else { f.pause(); g.pause(); btn.textContent = "Play"; }
+  }
+  btn.addEventListener("click", togglePlay);
+  stage.addEventListener("dblclick", togglePlay);
+
+  seek.addEventListener("input", function(){
+    if (!f.duration) return;
+    var t = f.duration * seek.value / 1000;
+    f.currentTime = t; g.currentTime = t;
+  });
+
+  setInterval(function(){
+    if (f.duration){
+      if (!seek.matches(":active")) seek.value = Math.round(f.currentTime / f.duration * 1000);
+      timeEl.textContent = fmt(f.currentTime) + " / " + fmt(f.duration);
+      // drift correction: master = final, slave = guide
+      if (!f.paused && Math.abs(g.currentTime - f.currentTime) > 0.06)
+        g.currentTime = f.currentTime;
+    }
+  }, 250);
+  setWipe(0.5);
+</script>
+</body>
+</html>

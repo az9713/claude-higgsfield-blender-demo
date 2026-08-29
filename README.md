@@ -19,6 +19,12 @@ The v2 previz, fed as a **depth guide** into `fal-ai/wan-vace-14b/depth`, became
 | [![blocking guide](docs/img/poster_guide.jpg)](https://az9713.github.io/claude-higgsfield-blender-demo/player.html?v=4) |
 | The exact video whose per-frame depth maps controlled the ninja shot's motion and camera: humanoid proxy with katana, textured corridor, rendered clean at 16 fps ([`docs/videos/ninja_guide.mp4`](docs/videos/ninja_guide.mp4)) |
 
+### Proof of lock — blocking vs final, in sync
+
+[![side by side](docs/img/poster_sxs.jpg)](https://az9713.github.io/claude-higgsfield-blender-demo/compare.html)
+
+**[▶ Interactive synced wipe](https://az9713.github.io/claude-higgsfield-blender-demo/compare.html)** — both videos play frame-locked; drag the divider to see the corridor walls become torii lines under the identical camera. Or watch the [baked side-by-side MP4](docs/videos/ninja_sxs.mp4).
+
 ## The two previz versions — click to play
 
 | v1 — simple follow cam | v2 — living five-beat camera |
