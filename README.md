@@ -56,10 +56,11 @@ Claude (desktop app)  ⇄  Higgsfield Bridge (cloud MCP server)  ⇄  Blender ad
 
 ```
 docs/                  # GitHub Pages site
-  index.html           # the full development journey
-  player.html          # video player (?v=1 | ?v=2)
-  videos/              # ffmpeg-compressed screen recordings (~30× smaller)
-  img/                 # beat renders, posters, setup screenshots
+  index.html           # the full development journey (Parts 1 + 2, diagrams, roles)
+  player.html          # video player (?v=1..4)
+  compare.html         # interactive synced wipe: blocking vs final
+  videos/              # previz recordings, blocking guide, ninja final, side-by-side
+  img/                 # beat renders, iteration stills, posters, setup screenshots
 ```
 
 ## Reproduce it

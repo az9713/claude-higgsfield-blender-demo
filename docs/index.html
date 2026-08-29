@@ -77,6 +77,65 @@
   </div>
 </div>
 
+<h3>The full system — who does what</h3>
+<svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;margin:18px 0" font-family="Segoe UI,system-ui,sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e8903a"/>
+    </marker>
+  </defs>
+  <!-- Claude orchestrator band -->
+  <rect x="10" y="10" width="920" height="58" rx="10" fill="#171a21" stroke="#c8f04a"/>
+  <text x="470" y="34" text-anchor="middle" fill="#c8f04a" font-size="16" font-weight="700">CLAUDE — the orchestrator</text>
+  <text x="470" y="54" text-anchor="middle" fill="#9aa3b2" font-size="12">plans the shot · writes every line of bpy and Python · audits numerically and visually · decides what to fix · spends the budget</text>
+  <!-- Bridge bus -->
+  <rect x="10" y="86" width="920" height="44" rx="8" fill="#1d212b" stroke="#2a2f3a"/>
+  <text x="470" y="104" text-anchor="middle" fill="#e8903a" font-size="13" font-weight="700">HIGGSFIELD BRIDGE — MCP transport</text>
+  <text x="470" y="121" text-anchor="middle" fill="#9aa3b2" font-size="11">every command below crosses this bridge to the local machine: bpy calls, headless renders, pip, fal scripts, even git</text>
+  <line x1="470" y1="68" x2="470" y2="86" stroke="#e8903a" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- pipeline row -->
+  <rect x="10" y="160" width="180" height="90" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="100" y="185" text-anchor="middle" fill="#c8f04a" font-size="13" font-weight="700">BLENDER</text>
+  <text x="100" y="204" text-anchor="middle" fill="#9aa3b2" font-size="11">geometry ground truth:</text>
+  <text x="100" y="219" text-anchor="middle" fill="#9aa3b2" font-size="11">scene · proxy · camera</text>
+  <text x="100" y="234" text-anchor="middle" fill="#9aa3b2" font-size="11">13 audited stage backups</text>
+  <rect x="230" y="160" width="150" height="90" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="305" y="190" text-anchor="middle" fill="#e8eaf0" font-size="12" font-weight="700">guide video</text>
+  <text x="305" y="207" text-anchor="middle" fill="#9aa3b2" font-size="11">clean EEVEE render</text>
+  <text x="305" y="222" text-anchor="middle" fill="#9aa3b2" font-size="11">1280×720 · 16 fps · 30 s</text>
+  <rect x="420" y="160" width="190" height="90" rx="10" fill="#171a21" stroke="#c8f04a"/>
+  <text x="515" y="184" text-anchor="middle" fill="#c8f04a" font-size="12" font-weight="700">fal.ai · wan-vace-14b/depth</text>
+  <text x="515" y="202" text-anchor="middle" fill="#9aa3b2" font-size="11">depth map = structure</text>
+  <text x="515" y="217" text-anchor="middle" fill="#9aa3b2" font-size="11">prompt = appearance</text>
+  <text x="515" y="232" text-anchor="middle" fill="#9aa3b2" font-size="11">$0.08 / s @ 720p</text>
+  <rect x="650" y="160" width="130" height="90" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="715" y="190" text-anchor="middle" fill="#e8eaf0" font-size="12" font-weight="700">ffmpeg</text>
+  <text x="715" y="207" text-anchor="middle" fill="#9aa3b2" font-size="11">fps conversion · cuts</text>
+  <text x="715" y="222" text-anchor="middle" fill="#9aa3b2" font-size="11">crossfade splice</text>
+  <rect x="820" y="160" width="110" height="90" rx="10" fill="#232a14" stroke="#c8f04a" stroke-width="2"/>
+  <text x="875" y="196" text-anchor="middle" fill="#c8f04a" font-size="13" font-weight="700">FINAL</text>
+  <text x="875" y="215" text-anchor="middle" fill="#9aa3b2" font-size="11">ninja · 30 s · 720p</text>
+  <line x1="190" y1="205" x2="228" y2="205" stroke="#e8903a" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="380" y1="205" x2="418" y2="205" stroke="#e8903a" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="610" y1="205" x2="648" y2="205" stroke="#e8903a" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="780" y1="205" x2="818" y2="205" stroke="#e8903a" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- image model branch -->
+  <rect x="230" y="285" width="190" height="60" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="325" y="308" text-anchor="middle" fill="#e8eaf0" font-size="12" font-weight="700">fal.ai · flux/schnell</text>
+  <text x="325" y="326" text-anchor="middle" fill="#9aa3b2" font-size="11">ninja reference image · $0.003</text>
+  <path d="M 420 315 C 470 315 490 260 505 252" fill="none" stroke="#e8903a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+  <text x="560" y="290" fill="#9aa3b2" font-size="10.5">identity reference (tested; final shot used prompt + depth only)</text>
+</svg>
+
+<table>
+  <tr><th>Role</th><th>What it contributes</th><th>What it can NOT do</th></tr>
+  <tr><td><b>Claude</b></td><td>The only author: writes the scene code, designs the camera language, runs the audits, diagnoses failures, decides each iteration, manages the budget</td><td>Touch anything directly — every action goes through a tool</td></tr>
+  <tr><td><b>Blender</b></td><td>The geometry ground truth: physical dimensions, real camera projection, deterministic motion — and a Python runtime on the user's machine</td><td>Make it look like the real world</td></tr>
+  <tr><td><b>Higgsfield Bridge</b></td><td>The MCP nervous system: routes each tool call to Blender's main thread and back, making the local machine reachable from a chat</td><td>Decide anything; it only transports and executes</td></tr>
+  <tr><td><b>fal.ai models</b></td><td><code>wan-vace-14b/depth</code> paints reality onto the depth structure; <code>flux/schnell</code> supplied a character reference for one test</td><td>Escape the depth map — geometry always wins (that's the point)</td></tr>
+  <tr><td><b>ffmpeg</b></td><td>The cutting room: frame-rate conversion, segment cuts, the face-reveal crossfade splice, the side-by-side proof</td><td>Create content; it only assembles</td></tr>
+</table>
+
 <p>Three properties make the combination work in practice:</p>
 
 <h3>Typed tools + a Python escape hatch</h3>
@@ -184,6 +243,12 @@ CAM_follow      — parented to the track, Track-To constraint on the aim;
 
 <p>The previz was never the destination. The follow-up brief: <em>use the v2 previz as a guide and generate a real video — a ninja walking down a lane in a park lined with tall trees — on a $7 fal.ai budget.</em> The reference: the torii-path fight scene from the same YouTube video that inspired this project.</p>
 
+<h3>Feasibility first, spending second</h3>
+<p>Before any credit moved, the agent researched what fal.ai actually offers today and picked <code>wan-vace-14b/depth</code> — a video-to-video model whose own demo is a person walking down a street — then verified pricing from the live model page ($0.08/s at 720p, $0.04/s at 480p, billed at 16 fps output) and budgeted the whole plan up front: cheap 480p tests, one 720p full pass, retry margin, all inside $7. The screen-recording previz was rejected as a guide (UI chrome everywhere); a clean render was scheduled instead — free.</p>
+
+<h3>The local-execution pattern</h3>
+<p>A quiet architectural trick carried the whole part: Blender's Python runtime doubled as a <b>gateway to the local machine</b>. Headless Blender renders, <code>pip install</code>, and the fal API scripts all ran as detached local processes launched through the bridge — which means the <code>FAL_API_KEY</code> was read from a local <code>.env</code> by a local script and <b>never entered the conversation</b>. The same pattern later ran <code>gh</code> and <code>git</code> to create and push this very repository.</p>
+
 <h3>The pipeline</h3>
 <pre>Blender previz (720 frames, EEVEE, headless)
    → clean 16 fps guide video (no UI, ffmpeg)
@@ -232,6 +297,17 @@ CAM_follow      — parented to the track, Track-To constraint on the aim;
     <figcaption>Side-by-side, in sync: Blender blocking (left) locks the motion and camera of the AI output (right).</figcaption>
   </figure>
 </div>
+
+<h3>The ledger, complete</h3>
+<table>
+  <tr><th>Spend</th><th>What it bought</th></tr>
+  <tr><td>6 × $0.20</td><td>480p test iterations — each one a diagnosis (the "silhouette negotiation" above)</td></tr>
+  <tr><td>$0.003</td><td>flux/schnell ninja reference image (test 3)</td></tr>
+  <tr><td>$2.40</td><td>the 30 s full pass at 720p, seed 920133674</td></tr>
+  <tr><td>$0.40</td><td>the 5 s face-reveal pass, same seed</td></tr>
+  <tr><td><b>≈ $4.00 of $7</b></td><td>total — everything else (13 previz stages, 3,600 rendered guide frames, all editing) was local and free</td></tr>
+</table>
+<p class="muted">Every asset behind the final cut — the 13 stage <code>.blend</code> files, the guide videos, prompts, runner scripts, reference image, and the raw generated passes — is archived alongside this repo with a manifest and a four-step reproduction recipe.</p>
 
 <h2>5 · Lessons Worth Keeping</h2>
 <p><b>In depth-guided generation, geometry is the prompt.</b> Six iterations proved that the text prompt loses every argument with the depth map: boxes stayed boxes, a floating head stayed a ball, and one katana modeled onto the proxy's back achieved what three prompt rewrites could not. Art-direct the guide, not the words.</p>
