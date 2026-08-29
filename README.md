@@ -14,6 +14,11 @@ A 30-second previz shot — white corridor, box person, one continuous camera mo
 
 The v2 previz, fed as a **depth guide** into `fal-ai/wan-vace-14b/depth`, became a 30-second shot of a ninja walking a torii-lined park lane — six $0.20 test iterations, one $2.40 full pass, one $0.40 face-reveal splice: **~$4 total**. The key finding: in depth-guided generation, *geometry is the prompt* — the character only became a ninja when the proxy got a humanoid silhouette and a katana modeled onto its back. Full story in [the journey, Part 2](https://az9713.github.io/claude-higgsfield-blender-demo/).
 
+| The Blender blocking guide that steered it — click to play |
+|---|
+| [![blocking guide](docs/img/poster_guide.jpg)](https://az9713.github.io/claude-higgsfield-blender-demo/player.html?v=4) |
+| The exact video whose per-frame depth maps controlled the ninja shot's motion and camera: humanoid proxy with katana, textured corridor, rendered clean at 16 fps ([`docs/videos/ninja_guide.mp4`](docs/videos/ninja_guide.mp4)) |
+
 ## The two previz versions — click to play
 
 | v1 — simple follow cam | v2 — living five-beat camera |

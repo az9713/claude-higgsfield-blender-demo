@@ -18,13 +18,18 @@
 <p><a href="index.html">← Back to the development journey</a></p>
 <script>
   var q = new URLSearchParams(location.search).get("v");
-  var v = (q === "2" || q === "3") ? q : "1";
+  var v = (q === "2" || q === "3" || q === "4") ? q : "1";
   var vid = document.getElementById("vid");
   if (v === "3") {
     vid.src = "videos/ninja_final.mp4";
     vid.poster = "img/poster_ninja.jpg";
     document.getElementById("title").textContent =
       "Part 2 — Ninja on the torii lane (depth-guided AI video from the v2 previz)";
+  } else if (v === "4") {
+    vid.src = "videos/ninja_guide.mp4";
+    vid.poster = "img/poster_guide.jpg";
+    document.getElementById("title").textContent =
+      "The Blender blocking guide — humanoid + katana proxy that steered the ninja video's motion and camera";
   } else {
     vid.src = "videos/blocking_" + v + ".mp4";
     vid.poster = "img/poster_" + v + ".jpg";
