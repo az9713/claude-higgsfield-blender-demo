@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Deterministic Previz Workflow — Blender as the Motion Lock for AI Video</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e8eaf0; --muted:#9aa3b2;
+    --accent:#c8f04a; --accent2:#e8903a; --line:#2a2f3a; --code:#12151c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink); font:16px/1.65 "Segoe UI",system-ui,-apple-system,sans-serif}
+  .wrap{max-width:960px; margin:0 auto; padding:0 24px 96px}
+  header{padding:72px 0 40px; border-bottom:1px solid var(--line)}
+  h1{font-size:2.1rem; line-height:1.2; letter-spacing:-.01em}
+  h1 .hl{color:var(--accent)}
+  .sub{color:var(--muted); margin-top:12px; max-width:46em}
+  h2{font-size:1.45rem; margin:60px 0 16px; color:var(--accent)}
+  h3{font-size:1.08rem; margin:30px 0 10px; color:var(--accent2)}
+  p{margin:12px 0; max-width:47em}
+  a{color:var(--accent)}
+  .muted{color:var(--muted)}
+  code{background:var(--code); border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+       font-family:Consolas,"Cascadia Code",monospace; font-size:.88em}
+  pre{background:var(--code); border:1px solid var(--line); border-radius:8px; padding:14px 16px;
+      overflow-x:auto; margin:14px 0; line-height:1.5; font-family:Consolas,monospace; font-size:.88em}
+  table{border-collapse:collapse; margin:16px 0; width:100%; font-size:.92em}
+  th,td{border:1px solid var(--line); padding:9px 13px; text-align:left; vertical-align:top}
+  th{background:var(--panel2); color:var(--accent)}
+  .step{background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent);
+        border-radius:10px; padding:18px 22px; margin:16px 0}
+  .step.loop{border-left-color:var(--accent2)}
+  .step b.t{display:block; font-size:1.02rem; margin-bottom:6px}
+  .step .who{font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--accent2)}
+  .callout{background:#232a14; border:1px solid var(--accent); border-radius:10px; padding:18px 22px; margin:22px 0}
+  .callout b{color:var(--accent)}
+  .vidrow{display:grid; grid-template-columns:1fr; gap:14px; margin:20px 0}
+  .vidrow figure{background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden}
+  .vidrow video{width:100%; display:block}
+  .vidrow figcaption{padding:10px 14px; font-size:.85rem; color:var(--muted)}
+  footer{margin-top:80px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>The Deterministic Previz Workflow<br><span class="hl">Blender as the Motion Lock for AI Video</span></h1>
+  <p class="sub">Generative video models invent beautifully but obey poorly: ask for a specific camera move and a specific choreography, and every generation is a new roll of the dice. This workflow removes the dice from the parts that must not wobble — <b>motion, camera, timing, and space are authored deterministically in Blender; only appearance is left to the model.</b></p>
+  <p class="sub" style="margin-top:8px">Extracted from a real production: <a href="index.html">the full development journey</a> of a 30-second ninja shot, built by conversation with Claude for ~$4 of generation credit.</p>
+</header>
+
+<h2>1 · The Workflow in Five Steps</h2>
+
+<div class="step">
+  <span class="who">Human</span>
+  <b class="t">1 — State the intent, at shot level</b>
+  <p>One or two sentences of cinematography, not technology: <em>"a 30-second single shot: a person walks down a corridor, the camera follows, then comes alive — different framings, no cuts, hero always in frame."</em> The human owns the creative intent throughout; everything below is implementation.</p>
+</div>
+
+<div class="step">
+  <span class="who">Claude</span>
+  <b class="t">2 — Formalize the prompt into a spec (not just expand it)</b>
+  <p>Before touching any tool, the agent converts the sentence into a <b>Scene Passport</b>: exact dimensions in metres, frame rate and range, a named camera plan (beats, lenses, holds), asset list, and — critically — <b>acceptance criteria</b> ("hero in frame at every sampled frame", "camera never nearer than 0.25 m to a wall"). This is the difference between prompt expansion and engineering: the spec is checkable, so every later step can be audited against it.</p>
+</div>
+
+<div class="step">
+  <span class="who">Claude ⇄ Higgsfield Bridge ⇄ Blender</span>
+  <b class="t">3 — Implement deterministically in Blender</b>
+  <p>Claude drives a live Blender session through the Higgsfield Bridge (an MCP connector exposing Blender's full Python API as callable tools). It builds the set, the proxy character, the walk cycle, and the camera rig — then <b>audits its own work</b>: numeric sweeps (projecting the hero into camera space at 120 sample frames) and true renders it inspects visually. The output is a clean rendered <b>guide video</b>: every frame a ground-truth statement of where everything is and where the camera looks.</p>
+</div>
+
+<div class="step loop">
+  <span class="who">The loop — Claude + fal.ai + Blender</span>
+  <b class="t">4 — Negotiate the silhouette (the step most people miss)</b>
+  <p>Cheap low-res test generations reveal how the video model interprets the guide's geometry — and the fixes go <b>back into Blender, not into the text prompt</b>. In the ninja shot: boxes generated as boxes in cloth; a smooth mannequin generated as a vinyl robot; only a connected humanoid proxy <em>with a katana modeled onto its back</em> generated as a ninja seen from behind. Six tests at $0.20 each bought the understanding; the geometry edits were free. <b>The 3D proxy is part of the prompt.</b></p>
+</div>
+
+<div class="step">
+  <span class="who">Human decision → Claude + fal.ai + ffmpeg</span>
+  <b class="t">5 — Generate the final and assemble</b>
+  <p>With the guide locked, one full-length, full-resolution generation (depth-conditioned, fixed seed) produces the shot. Segments needing a different appearance instruction — the face reveal — are generated separately from the same guide and spliced with crossfades. The human approves each spend; the agent executes and verifies.</p>
+</div>
+
+<h2>2 · The Flow, Drawn</h2>
+
+<svg viewBox="0 0 940 430" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;margin:14px 0" font-family="Segoe UI,system-ui,sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e8903a"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c8f04a"/>
+    </marker>
+  </defs>
+  <rect x="10" y="20" width="170" height="72" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="95" y="50" text-anchor="middle" fill="#e8eaf0" font-size="13" font-weight="700">HUMAN</text>
+  <text x="95" y="70" text-anchor="middle" fill="#9aa3b2" font-size="11">shot-level intent</text>
+  <rect x="240" y="20" width="190" height="72" rx="10" fill="#171a21" stroke="#c8f04a"/>
+  <text x="335" y="45" text-anchor="middle" fill="#c8f04a" font-size="13" font-weight="700">CLAUDE</text>
+  <text x="335" y="64" text-anchor="middle" fill="#9aa3b2" font-size="11">Scene Passport: spec +</text>
+  <text x="335" y="79" text-anchor="middle" fill="#9aa3b2" font-size="11">acceptance criteria</text>
+  <rect x="490" y="20" width="200" height="72" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="590" y="45" text-anchor="middle" fill="#e8eaf0" font-size="13" font-weight="700">BLENDER  (via Bridge)</text>
+  <text x="590" y="64" text-anchor="middle" fill="#9aa3b2" font-size="11">set · proxy · walk · camera rig</text>
+  <text x="590" y="79" text-anchor="middle" fill="#9aa3b2" font-size="11">audited against the passport</text>
+  <rect x="750" y="20" width="180" height="72" rx="10" fill="#1d212b" stroke="#2a2f3a"/>
+  <text x="840" y="50" text-anchor="middle" fill="#e8eaf0" font-size="13" font-weight="700">GUIDE VIDEO</text>
+  <text x="840" y="70" text-anchor="middle" fill="#9aa3b2" font-size="11">deterministic ground truth</text>
+  <line x1="180" y1="56" x2="238" y2="56" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="430" y1="56" x2="488" y2="56" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="690" y1="56" x2="748" y2="56" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="490" y="170" width="200" height="86" rx="10" fill="#171a21" stroke="#c8f04a"/>
+  <text x="590" y="196" text-anchor="middle" fill="#c8f04a" font-size="13" font-weight="700">VIDEO MODEL</text>
+  <text x="590" y="214" text-anchor="middle" fill="#9aa3b2" font-size="11">depth-conditioned v2v</text>
+  <text x="590" y="229" text-anchor="middle" fill="#9aa3b2" font-size="11">(fal.ai wan-vace-14b/depth)</text>
+  <text x="590" y="244" text-anchor="middle" fill="#9aa3b2" font-size="11">structure obeys · appearance invents</text>
+  <line x1="840" y1="92" x2="840" y2="213" stroke="#e8903a" stroke-width="0"/>
+  <path d="M 840 92 L 840 213 L 692 213" fill="none" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="180" y="170" width="220" height="86" rx="10" fill="#171a21" stroke="#e8903a" stroke-width="2"/>
+  <text x="290" y="196" text-anchor="middle" fill="#e8903a" font-size="13" font-weight="700">THE LOOP</text>
+  <text x="290" y="214" text-anchor="middle" fill="#9aa3b2" font-size="11">cheap 480p tests → diagnose →</text>
+  <text x="290" y="229" text-anchor="middle" fill="#9aa3b2" font-size="11">edit GEOMETRY, not prompt →</text>
+  <text x="290" y="244" text-anchor="middle" fill="#9aa3b2" font-size="11">re-render guide → test again</text>
+  <line x1="488" y1="213" x2="402" y2="213" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M 290 170 C 290 120 430 90 488 76" fill="none" stroke="#c8f04a" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#g)"/>
+  <text x="300" y="125" fill="#c8f04a" font-size="11">proxy edits (the proxy IS part of the prompt)</text>
+
+  <rect x="180" y="330" width="220" height="72" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="290" y="358" text-anchor="middle" fill="#e8eaf0" font-size="13" font-weight="700">FINAL GENERATION</text>
+  <text x="290" y="377" text-anchor="middle" fill="#9aa3b2" font-size="11">full length · full res · fixed seed</text>
+  <rect x="490" y="330" width="200" height="72" rx="10" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="590" y="358" text-anchor="middle" fill="#e8eaf0" font-size="13" font-weight="700">FFMPEG ASSEMBLY</text>
+  <text x="590" y="377" text-anchor="middle" fill="#9aa3b2" font-size="11">per-phase segments · crossfades</text>
+  <rect x="750" y="330" width="180" height="72" rx="10" fill="#232a14" stroke="#c8f04a" stroke-width="2"/>
+  <text x="840" y="358" text-anchor="middle" fill="#c8f04a" font-size="13" font-weight="700">FINAL MP4</text>
+  <text x="840" y="377" text-anchor="middle" fill="#9aa3b2" font-size="11">motion &amp; camera locked</text>
+  <line x1="290" y1="256" x2="290" y2="328" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="400" y1="366" x2="488" y2="366" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="690" y1="366" x2="748" y2="366" stroke="#e8903a" stroke-width="2" marker-end="url(#a)"/>
+</svg>
+
+<h2>3 · The Determinism Contract</h2>
+
+<p>The heart of the workflow is a clean division of authority. Depth conditioning means every generated pixel must sit on a ray the Blender camera defined — so whatever lives in geometry is locked, and whatever doesn't is negotiable.</p>
+
+<table>
+  <tr><th>Locked by Blender (deterministic)</th><th>Free for the model (generative)</th><th>Negotiated (the loop decides)</th></tr>
+  <tr>
+    <td>Camera path, framing, and every cut-free transition<br>Focal lengths and their animation<br>Timing: when each beat starts, holds, ends<br>Character blocking: position, speed, gait cadence<br>Spatial layout: where walls/gates/path edges land<br>Direction of travel (via asymmetric geometry)</td>
+    <td>Surfaces and materials (white panels → red torii wood)<br>Lighting mood, color grade, atmosphere<br>Vegetation, ground detail, sky<br>Fabric behavior, folds, cloth character<br>The face itself</td>
+    <td>Character identity at close range (depth dominates near the lens)<br>Which way a symmetric figure faces<br>Fine silhouette features (hood, sword, hands)</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <b>Why this beats re-rolling text-to-video:</b> a pure text-to-video model gives you a <em>new</em> camera move and a <em>new</em> choreography on every attempt — you can retry appearance only by also retrying everything else. Here, retries only change appearance. The shot — in the film-making sense of the word — survives every regeneration. That is what made a face-reveal splice possible: two generations, same guide, cut together without the camera ever disagreeing with itself.
+</div>
+
+<h2>4 · The Proxy Is Part of the Prompt</h2>
+
+<p>The least obvious and most valuable lesson. In depth-conditioned generation, the text prompt loses every argument with geometry:</p>
+
+<pre>proxy = boxes                 → "ninja" prompt → boxes wearing black cloth
+proxy = smooth mannequin      → "ninja" prompt → glossy vinyl robot
+proxy = connected humanoid    → "ninja" prompt → a person… facing the wrong way
+proxy + katana on its back    → "ninja" prompt → ninja, from behind ✓</pre>
+
+<p>So treat the proxy as character design at depth-map resolution: connected silhouette (gaps read as separate objects), human proportions, and — for anything directional — an <b>asymmetric feature that tells the model which side is which</b>. A sword, a backpack, a hood-point: one honest piece of geometry outperforms three prompt rewrites, and it costs nothing.</p>
+
+<h2>5 · Seeing It Work</h2>
+<div class="vidrow">
+  <figure>
+    <video controls preload="metadata" poster="img/poster_sxs.jpg" src="videos/ninja_sxs.mp4"></video>
+    <figcaption>The contract, visualized: Blender blocking (left) and the AI final (right) playing in sync — motion and camera identical, appearance entirely regenerated. Also available as an <a href="compare.html">interactive wipe</a>.</figcaption>
+  </figure>
+</div>
+
+<h2>6 · Limits and Practical Notes</h2>
+<p><b>Close range is where depth wins too hard.</b> Inside ~1.5 m the depth map is so dense that the character's exact surface shape is enforced — a stylized proxy stays stylized. Keep the camera ≥2.5 m from the subject, or accept stylization on close passes.</p>
+<p><b>One generation, one appearance instruction.</b> A single continuous generation applies one prompt to the whole clip; per-phase instructions ("face visible only when the camera is in front") tend to collapse to the model's bias. The fix is segmentation: generate phases separately from the same guide and splice — the locked camera makes the seams survivable.</p>
+<p><b>Length costs temporal resolution.</b> Models cap frames per call (241 at 16 fps for wan-vace); longer shots auto-downsample and interpolate back. Plan beats so nothing critical depends on 60 ms timing.</p>
+<p><b>Budget shape:</b> iterate at 480p (cents), commit at 720p once (dollars). The ninja shot: six tests $1.20, reference image $0.003, final passes $2.80 — <b>≈$4 total</b>, with all 3D work and editing free and local.</p>
+<p><b>Generalizes freely.</b> Any DCC that renders a clean animation works in the Blender seat; any depth- or pose-conditioned video model works in the fal.ai seat. The contract — geometry locks structure, prompts paint appearance — is the workflow, not the specific tools.</p>
+
+<footer>
+  Companion to <a href="index.html">the full development journey</a> ·
+  <a href="compare.html">interactive blocking-vs-final wipe</a> ·
+  inspired by <a href="https://www.youtube.com/watch?v=OiULPvTJ-0E&amp;t=720s">this YouTube workflow video</a>
+</footer>
+
+</div>
+</body>
+</html>

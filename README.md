@@ -8,6 +8,8 @@ A 30-second previz shot — white corridor, box person, one continuous camera mo
 
 **The full development journey** — every prompt, every stage, every bug, every fix — is [`docs/index.html`](docs/index.html), rendered live at **[az9713.github.io/claude-higgsfield-blender-demo](https://az9713.github.io/claude-higgsfield-blender-demo/)** (click the badge above to open it as a web page rather than source).
 
+**📐 New to the method? Start with [The Deterministic Previz Workflow](https://az9713.github.io/claude-higgsfield-blender-demo/workflow.html)** — the five-step recipe, the determinism contract (what Blender locks vs what the model invents), and why the 3D proxy is part of the prompt.
+
 ## Part 2: the previz became a real video — click to play
 
 [![Ninja final](docs/img/poster_ninja.jpg)](https://az9713.github.io/claude-higgsfield-blender-demo/player.html?v=3)
