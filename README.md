@@ -8,7 +8,13 @@ A 30-second previz shot — white corridor, box person, one continuous camera mo
 
 **The full development journey** — every prompt, every stage, every bug, every fix — is [`docs/index.html`](docs/index.html), rendered live at **[az9713.github.io/claude-higgsfield-blender-demo](https://az9713.github.io/claude-higgsfield-blender-demo/)** (click the badge above to open it as a web page rather than source).
 
-## The two versions — click to play
+## Part 2: the previz became a real video — click to play
+
+[![Ninja final](docs/img/poster_ninja.jpg)](https://az9713.github.io/claude-higgsfield-blender-demo/player.html?v=3)
+
+The v2 previz, fed as a **depth guide** into `fal-ai/wan-vace-14b/depth`, became a 30-second shot of a ninja walking a torii-lined park lane — six $0.20 test iterations, one $2.40 full pass, one $0.40 face-reveal splice: **~$4 total**. The key finding: in depth-guided generation, *geometry is the prompt* — the character only became a ninja when the proxy got a humanoid silhouette and a katana modeled onto its back. Full story in [the journey, Part 2](https://az9713.github.io/claude-higgsfield-blender-demo/).
+
+## The two previz versions — click to play
 
 | v1 — simple follow cam | v2 — living five-beat camera |
 |---|---|

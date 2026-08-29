@@ -180,7 +180,52 @@ CAM_follow      — parented to the track, Track-To constraint on the aim;
   <figure><img src="img/higgsfield-bridge-connector-connected.png" alt="Connected"><figcaption>Connector connected among the rest of the stack</figcaption></figure>
 </div>
 
-<h2>4 · Lessons Worth Keeping</h2>
+<h2>4 · Part 2: Previz → AI Video</h2>
+
+<p>The previz was never the destination. The follow-up brief: <em>use the v2 previz as a guide and generate a real video — a ninja walking down a lane in a park lined with tall trees — on a $7 fal.ai budget.</em> The reference: the torii-path fight scene from the same YouTube video that inspired this project.</p>
+
+<h3>The pipeline</h3>
+<pre>Blender previz (720 frames, EEVEE, headless)
+   → clean 16 fps guide video (no UI, ffmpeg)
+   → fal-ai/wan-vace-14b/depth  ($0.08 / video-second @ 720p)
+        depth map extracted per frame = structure control
+        text prompt = appearance
+   → generated video, spliced with ffmpeg</pre>
+  <p>Every fal call ran on the local machine via the bridge, reading <code>FAL_API_KEY</code> from a local <code>.env</code> — the key never left the machine. Total spend: <b>~$4.03 of the $7 budget</b>, including six 480p test iterations at $0.20 each.</p>
+
+<h3>The silhouette negotiation</h3>
+<p>Depth-guided video-to-video turned out to be a negotiation: <b>the model paints whatever the depth map asserts, so the previz proxy <em>is</em> the character design.</b> Six test iterations, each fixing what the previous one proved:</p>
+<table>
+  <tr><th>#</th><th>Guide state</th><th>Result</th></tr>
+  <tr><td>1</td><td>Original box person</td><td>Environment spectacular; character = boxes dressed in black cloth</td></tr>
+  <tr><td>2</td><td>Rounded mannequin (sphere head, capsule limbs)</td><td>Glossy vinyl robot — detached floating head reads as a ball joint</td></tr>
+  <tr><td>3</td><td>+ AI-generated ninja reference image (<code>ref_image_urls</code>)</td><td>Backfired: studio-mannequin stance transferred literally → fabric dress-form</td></tr>
+  <tr><td>4</td><td>Far segment instead of close pass</td><td>Distance helps — head finally reads as masked — but figure faces the wrong way</td></tr>
+  <tr><td>5</td><td>Connected body: hips, shoulder overlap, thick neck, forward lean</td><td>Real fabric, natural stride — still turns to face the camera</td></tr>
+  <tr><td>6</td><td><b>+ katana modeled onto his back</b></td><td>Solved. The asymmetric geometry forces "seen from behind" better than any prompt could</td></tr>
+</table>
+<div class="gallery">
+  <figure><img src="img/iter1_boxes.jpg" alt="iteration 1"><figcaption>Test 1 — boxes in black cloth (but look at that lane)</figcaption></figure>
+  <figure><img src="img/iter3_mannequin.jpg" alt="iteration 3"><figcaption>Test 3 — the reference image backfires: dress-form</figcaption></figure>
+  <figure><img src="img/iter6_katana.jpg" alt="iteration 6"><figcaption>Test 6 — the katana breaks the symmetry: ninja, from behind</figcaption></figure>
+  <figure><img src="img/face_reveal.jpg" alt="face reveal"><figcaption>The face-reveal segment — front-view prompt on the frontal beat</figcaption></figure>
+</div>
+
+<h3>The final cut</h3>
+<p>The full 30 s ran as one continuous 720p generation ($2.40) — one consistent world, no scene drift. It kept the ninja back-view throughout (the same depth cue that fixed the direction also overpowered the "face visible from the front" phase), so the face reveal was generated separately: the frontal camera beat re-run with a front-view prompt ($0.40), then spliced into the master with half-second crossfades in ffmpeg.</p>
+<div class="vidrow">
+  <figure class="gallery" style="display:block">
+    <video controls preload="metadata" poster="img/poster_ninja.jpg" src="videos/ninja_final.mp4"></video>
+    <figcaption>The final 30-second cut — depth-guided generation over the v2 previz, with the spliced face reveal at 15–19 s.</figcaption>
+  </figure>
+  <figure class="gallery" style="display:block">
+    <video controls preload="metadata" src="videos/ninja_guide.mp4"></video>
+    <figcaption>The guide that steered it — the same corridor previz, rendered clean at 16 fps with the humanoid + katana proxy.</figcaption>
+  </figure>
+</div>
+
+<h2>5 · Lessons Worth Keeping</h2>
+<p><b>In depth-guided generation, geometry is the prompt.</b> Six iterations proved that the text prompt loses every argument with the depth map: boxes stayed boxes, a floating head stayed a ball, and one katana modeled onto the proxy's back achieved what three prompt rewrites could not. Art-direct the guide, not the words.</p>
 <p><b>Decouple what the camera looks at from where it goes.</b> A Track-To constraint on an aim empty plus a keyed route on a dolly empty turns “hero always in frame, no cuts” from a per-frame prayer into a structural property.</p>
 <p><b>Audit numerically, verify visually — and know which wins.</b> The numeric sweep caught collisions and framing violations a human would scrub past; the viewed frame caught a bad composition the numbers approved. When they disagree, render.</p>
 <p><b>Geometry constrains cinematography.</b> A 2.4 m corridor caps lateral camera distance at ~1 m, and at 1 m a 1.8 m figure cannot fit a 25 mm frame. The fix wasn't fighting the math — it was a framing accent that turned the constraint into camera language.</p>
