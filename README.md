@@ -4,7 +4,9 @@ A 30-second previz shot — white corridor, box person, one continuous camera mo
 
 **Inspiration:** [This Blender + Higgsfield AI Workflow Changes How You Make AI Video](https://www.youtube.com/watch?v=OiULPvTJ-0E&t=720s) (YouTube).
 
-**📖 Read the full development journey:** [az9713.github.io/claude-higgsfield-blender-demo](https://az9713.github.io/claude-higgsfield-blender-demo/) — every prompt, every stage, every bug, every fix.
+[![📖 Read the Development Journey — live page](https://img.shields.io/badge/%F0%9F%93%96_Development_Journey-read_the_live_page-c8f04a?style=for-the-badge&labelColor=171a21)](https://az9713.github.io/claude-higgsfield-blender-demo/)
+
+**The full development journey** — every prompt, every stage, every bug, every fix — is [`docs/index.html`](docs/index.html), rendered live at **[az9713.github.io/claude-higgsfield-blender-demo](https://az9713.github.io/claude-higgsfield-blender-demo/)** (click the badge above to open it as a web page rather than source).
 
 ## The two versions — click to play
 
